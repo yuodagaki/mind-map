@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>マインドマップ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+<body class="h-screen w-screen overflow-hidden bg-slate-50 text-slate-800 flex flex-col">
+  <header class="flex flex-wrap items-center gap-2 px-4 py-2 bg-white border-b border-slate-200 shadow-sm z-10">
+    <h1 class="text-base font-bold mr-4">マインドマップ</h1>
+
+    <button id="new-map-btn" class="toolbar-btn" title="新規作成">新規</button>
+    <button id="open-btn" class="toolbar-btn" title="ファイルを開く (yml)">開く</button>
+    <button id="save-btn" class="toolbar-btn" title="保存 (Ctrl+S)">保存</button>
+    <button id="save-as-btn" class="toolbar-btn" title="名前を付けて保存">名前を付けて保存</button>
+
+    <span class="w-px h-6 bg-slate-200 mx-1"></span>
+
+    <button id="undo-btn" class="toolbar-btn" title="元に戻す (Ctrl+Z)">元に戻す</button>
+    <button id="redo-btn" class="toolbar-btn" title="やり直し (Ctrl+Shift+Z)">やり直し</button>
+
+    <span class="w-px h-6 bg-slate-200 mx-1"></span>
+
+    <button id="add-child-btn" class="toolbar-btn" title="子ノードを追加 (Enter)">ノード追加</button>
+    <button id="edit-btn" class="toolbar-btn" title="選択中ノードを編集">編集</button>
+    <button id="delete-btn" class="toolbar-btn toolbar-btn-danger" title="ノードを削除 (Delete)">削除</button>
+    <label class="toolbar-btn flex items-center gap-2 cursor-pointer" title="選択中ノードの色を変更">
+      色
+      <input id="color-input" type="color" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" />
+    </label>
+
+    <span id="status" class="ml-auto text-sm text-slate-500"></span>
+  </header>
+
+  <main id="viewport" class="relative flex-1 overflow-hidden bg-slate-100 cursor-grab active:cursor-grabbing">
+    <div id="canvas-content" class="absolute top-0 left-0 origin-top-left">
+      <svg id="connections" class="absolute overflow-visible pointer-events-none" width="1" height="1"></svg>
+      <div id="nodes-layer" class="absolute top-0 left-0"></div>
+    </div>
+  </main>
+
+  <style>
+    .toolbar-btn {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+      border-radius: 0.5rem;
+      background-color: #f1f5f9;
+      color: #334155;
+    }
+    .toolbar-btn:hover {
+      background-color: #e2e8f0;
+    }
+    .toolbar-btn-danger:hover {
+      background-color: #fecaca;
+      color: #991b1b;
+    }
+  </style>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
