@@ -134,6 +134,10 @@ export class MindMapStore {
     return result;
   }
 
+  forEachNode(callback) {
+    walk(this.state.root, null, (node) => callback(node));
+  }
+
   findParent(id) {
     let result = null;
     walk(this.state.root, null, (node, parent) => {

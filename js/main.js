@@ -22,10 +22,14 @@ const bgColorInput = document.getElementById('bg-color-input');
 const textColorInput = document.getElementById('text-color-input');
 const bgPaletteEl = document.getElementById('bg-palette');
 const textPaletteEl = document.getElementById('text-palette');
+const searchInput = document.getElementById('search-input');
+const searchCountEl = document.getElementById('search-count');
 
 let selectedId = null;
 const pan = { x: 0, y: 0 };
 let zoom = 1;
+let searchMatchIds = [];
+let searchIndex = -1;
 
 const store = new MindMapStore(createDefaultState(), () => renderAll());
 selectedId = store.rootId;
@@ -51,6 +55,14 @@ function screenToCanvas(clientX, clientY) {
   };
 }
 
+function centerOnNode(nodeId) {
+  const node = store.findNode(nodeId);
+  if (!node) return;
+  pan.x = -zoom * node.position.x;
+  pan.y = -zoom * node.position.y;
+  applyTransform();
+}
+
 function showStatus(message, isError = false) {
   statusEl.textContent = message;
   statusEl.className = isError ? 'text-sm text-red-600' : 'text-sm text-slate-500';
@@ -65,6 +77,7 @@ function renderAll() {
     selectedId,
     nodesLayer,
     svg,
+    highlightedIds: new Set(searchMatchIds),
     handlers: {
       onTextCommit: (nodeId, text) => store.updateText(nodeId, text),
       onAddChild: (parentId) => handleAddChild(parentId),
@@ -283,10 +296,61 @@ function buildPalette(container, onPick) {
 buildPalette(bgPaletteEl, (color) => store.setColor(selectedId, color));
 buildPalette(textPaletteEl, (color) => store.setTextColor(selectedId, color));
 
+// --- ノード検索 ---
+
+function updateSearch() {
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) {
+    searchMatchIds = [];
+    searchIndex = -1;
+    searchCountEl.textContent = '';
+    renderAll();
+    return;
+  }
+  const matches = [];
+  store.forEachNode((node) => {
+    if (node.text.toLowerCase().includes(query)) matches.push(node.id);
+  });
+  searchMatchIds = matches;
+  searchIndex = matches.length > 0 ? 0 : -1;
+  searchCountEl.textContent = matches.length > 0 ? `${searchIndex + 1}/${matches.length}` : '0件';
+  renderAll();
+}
+
+function jumpToMatch(delta) {
+  if (searchMatchIds.length === 0) return;
+  searchIndex = (searchIndex + delta + searchMatchIds.length) % searchMatchIds.length;
+  const nodeId = searchMatchIds[searchIndex];
+  store.expandAncestors(nodeId);
+  selectedId = nodeId;
+  centerOnNode(nodeId);
+  renderAll();
+  searchCountEl.textContent = `${searchIndex + 1}/${searchMatchIds.length}`;
+}
+
+searchInput.addEventListener('input', updateSearch);
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    e.stopPropagation();
+    jumpToMatch(e.shiftKey ? -1 : 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    e.stopPropagation();
+    searchInput.value = '';
+    updateSearch();
+    searchInput.blur();
+  }
+});
+
 // --- キーボードショートカット ---
 
 document.addEventListener('keydown', (e) => {
   const active = document.activeElement;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.isContentEditable) {
+    // 検索ボックスやカラーピッカーにフォーカス中はノード操作のショートカットを発火させない
+    return;
+  }
   if (active && active.isContentEditable) {
     // IME変換確定のEnter(isComposing、またはIME変換中を示すkeyCode 229)は編集確定として扱わない
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {

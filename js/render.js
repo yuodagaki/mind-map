@@ -126,7 +126,7 @@ export function startEditingNode(nodeId) {
   if (trigger) trigger();
 }
 
-export function render(state, { selectedId, nodesLayer, svg, handlers }) {
+export function render(state, { selectedId, nodesLayer, svg, handlers, highlightedIds }) {
   const pairs = collectNodes(state.root);
   drawEdges(svg, pairs);
 
@@ -143,6 +143,7 @@ export function render(state, { selectedId, nodesLayer, svg, handlers }) {
     el.style.transform = 'translate(-50%, -50%)';
     el.style.backgroundColor = node.color;
     el.style.borderColor = node.id === selectedId ? '#1d4ed8' : 'transparent';
+    el.style.boxShadow = highlightedIds && highlightedIds.has(node.id) ? '0 0 0 3px #facc15' : '';
     el.dataset.nodeId = node.id;
 
     const textSpan = document.createElement('div');
