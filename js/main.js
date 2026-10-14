@@ -16,6 +16,7 @@ const undoBtn = document.getElementById('undo-btn');
 const redoBtn = document.getElementById('redo-btn');
 const addChildBtn = document.getElementById('add-child-btn');
 const editBtn = document.getElementById('edit-btn');
+const duplicateBtn = document.getElementById('duplicate-btn');
 const deleteBtn = document.getElementById('delete-btn');
 const bgColorInput = document.getElementById('bg-color-input');
 const textColorInput = document.getElementById('text-color-input');
@@ -101,6 +102,18 @@ function handleDelete(nodeId = selectedId) {
   const ok = store.deleteNode(nodeId);
   if (ok) {
     selectedId = parent ? parent.id : store.rootId;
+    renderAll();
+  }
+}
+
+function handleDuplicate(nodeId = selectedId) {
+  if (nodeId === store.rootId) {
+    showStatus('ルートノードは複製できません', true);
+    return;
+  }
+  const clone = store.duplicateNode(nodeId);
+  if (clone) {
+    selectedId = clone.id;
     renderAll();
   }
 }
@@ -243,6 +256,7 @@ redoBtn.addEventListener('click', () => store.redo());
 
 addChildBtn.addEventListener('click', () => handleAddChild());
 editBtn.addEventListener('click', () => startEditingNode(selectedId));
+duplicateBtn.addEventListener('click', () => handleDuplicate());
 deleteBtn.addEventListener('click', () => handleDelete());
 
 bgColorInput.addEventListener('change', () => {
@@ -297,6 +311,9 @@ document.addEventListener('keydown', (e) => {
   } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
     e.preventDefault();
     saveBtn.click();
+  } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+    e.preventDefault();
+    handleDuplicate();
   }
 });
 

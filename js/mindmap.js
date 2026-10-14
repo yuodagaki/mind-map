@@ -58,6 +58,18 @@ function walk(node, parent, callback) {
   }
 }
 
+function cloneSubtree(node, dx, dy) {
+  return {
+    id: generateId(),
+    text: node.text,
+    color: node.color,
+    textColor: node.textColor,
+    position: { x: node.position.x + dx, y: node.position.y + dy },
+    collapsed: node.collapsed,
+    children: node.children.map((child) => cloneSubtree(child, dx, dy)),
+  };
+}
+
 function normalizeNode(raw) {
   if (!raw || typeof raw !== 'object') {
     throw new Error('ノードの形式が不正です');
@@ -217,6 +229,19 @@ export class MindMapStore {
       current = this.findParent(current.id);
     }
     if (changed) this._commit();
+  }
+
+  duplicateNode(id) {
+    if (id === this.rootId) return null; // ルートは複製不可(ルートは単一前提のため)
+    const node = this.findNode(id);
+    const parent = this.findParent(id);
+    if (!node || !parent) return null;
+    this._pushUndo();
+    const clone = cloneSubtree(node, 40, 40);
+    const index = parent.children.indexOf(node);
+    parent.children.splice(index + 1, 0, clone);
+    this._commit();
+    return clone;
   }
 
   deleteNode(id) {
