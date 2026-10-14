@@ -45,6 +45,7 @@ export function createDefaultState() {
       color: PALETTE[0],
       textColor: DEFAULT_TEXT_COLOR,
       position: { x: 0, y: 0 },
+      collapsed: false,
       children: [],
     },
   };
@@ -70,6 +71,7 @@ function normalizeNode(raw) {
       x: Number(raw.position && raw.position.x) || 0,
       y: Number(raw.position && raw.position.y) || 0,
     },
+    collapsed: Boolean(raw.collapsed),
     children: Array.isArray(raw.children) ? raw.children.map(normalizeNode) : [],
   };
 }
@@ -156,9 +158,11 @@ export class MindMapStore {
         x: parent.position.x + 220,
         y: parent.position.y + index * 90 - ((parent.children.length) * 45),
       },
+      collapsed: false,
       children: [],
     };
     parent.children.push(newNode);
+    parent.collapsed = false; // 折りたたみ中に子を追加したら展開して見えるようにする
     this._commit();
     return newNode;
   }
@@ -192,6 +196,27 @@ export class MindMapStore {
     if (!node) return;
     node.position = position;
     this._commit();
+  }
+
+  // 折りたたみ状態はビュー上の一時的な見せ方なのでundo履歴には積まない
+  toggleCollapse(id) {
+    const node = this.findNode(id);
+    if (!node) return;
+    node.collapsed = !node.collapsed;
+    this._commit();
+  }
+
+  expandAncestors(id) {
+    let current = this.findParent(id);
+    let changed = false;
+    while (current) {
+      if (current.collapsed) {
+        current.collapsed = false;
+        changed = true;
+      }
+      current = this.findParent(current.id);
+    }
+    if (changed) this._commit();
   }
 
   deleteNode(id) {

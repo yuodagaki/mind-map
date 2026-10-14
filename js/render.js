@@ -4,9 +4,18 @@ function collectNodes(root) {
   const result = [];
   (function visit(node, parent) {
     result.push({ node, parent });
+    if (node.collapsed) return; // 折りたたみ中は子孫を描画しない
     for (const child of node.children) visit(child, node);
   })(root, null);
   return result;
+}
+
+function countDescendants(node) {
+  let count = 0;
+  for (const child of node.children) {
+    count += 1 + countDescendants(child);
+  }
+  return count;
 }
 
 function drawEdges(svg, pairs) {
@@ -143,6 +152,28 @@ export function render(state, { selectedId, nodesLayer, svg, handlers }) {
     el.appendChild(textSpan);
     const triggerEdit = attachEditing(textSpan, node.id, node.text, handlers);
     editTriggers.set(node.id, triggerEdit);
+
+    if (node.collapsed && node.children.length > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'ml-2 text-xs text-slate-500 whitespace-nowrap';
+      badge.textContent = `+${countDescendants(node)}`;
+      el.appendChild(badge);
+    }
+
+    if (node.children.length > 0) {
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.title = node.collapsed ? '展開' : '折りたたみ';
+      toggleBtn.textContent = node.collapsed ? '▸' : '▾';
+      toggleBtn.className =
+        'absolute -left-3 -bottom-3 w-6 h-6 rounded-full bg-slate-400 hover:bg-slate-500 text-white text-xs leading-none shadow flex items-center justify-center';
+      toggleBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handlers.onToggleCollapse(node.id);
+      });
+      el.appendChild(toggleBtn);
+    }
 
     const editBtn = document.createElement('button');
     editBtn.type = 'button';

@@ -69,6 +69,7 @@ function renderAll() {
       onAddChild: (parentId) => handleAddChild(parentId),
       onDeleteNode: (nodeId) => handleDelete(nodeId),
       onNodeMouseDown: (e, nodeId) => startNodeDrag(e, nodeId),
+      onToggleCollapse: (nodeId) => store.toggleCollapse(nodeId),
     },
   });
   const selectedNode = store.findNode(selectedId);
