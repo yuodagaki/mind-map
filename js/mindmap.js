@@ -58,6 +58,13 @@ function walk(node, parent, callback) {
   }
 }
 
+function translateSubtree(node, dx, dy) {
+  node.position = { x: node.position.x + dx, y: node.position.y + dy };
+  for (const child of node.children) {
+    translateSubtree(child, dx, dy);
+  }
+}
+
 function cloneSubtree(node, dx, dy) {
   return {
     id: generateId(),
@@ -210,7 +217,9 @@ export class MindMapStore {
   moveNode(id, position) {
     const node = this.findNode(id);
     if (!node) return;
-    node.position = position;
+    const dx = position.x - node.position.x;
+    const dy = position.y - node.position.y;
+    translateSubtree(node, dx, dy);
     this._commit();
   }
 
