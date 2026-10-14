@@ -137,7 +137,8 @@ export function render(state, { selectedId, nodesLayer, svg, handlers }) {
     el.dataset.nodeId = node.id;
 
     const textSpan = document.createElement('div');
-    textSpan.className = 'text-sm font-medium text-slate-800 outline-none leading-snug';
+    textSpan.className = 'text-sm font-medium outline-none leading-snug';
+    textSpan.style.color = node.textColor;
     renderLines(textSpan, node.text);
     el.appendChild(textSpan);
     const triggerEdit = attachEditing(textSpan, node.id, node.text, handlers);

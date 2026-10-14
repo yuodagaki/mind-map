@@ -1,4 +1,4 @@
-import { MindMapStore, createDefaultState, parseYamlToState } from './mindmap.js';
+import { MindMapStore, createDefaultState, parseYamlToState, BASIC_COLORS } from './mindmap.js';
 import { render, startEditingNode } from './render.js';
 import { saveYaml, openYaml, clearFileHandle } from './file-io.js';
 
@@ -17,7 +17,10 @@ const redoBtn = document.getElementById('redo-btn');
 const addChildBtn = document.getElementById('add-child-btn');
 const editBtn = document.getElementById('edit-btn');
 const deleteBtn = document.getElementById('delete-btn');
-const colorInput = document.getElementById('color-input');
+const bgColorInput = document.getElementById('bg-color-input');
+const textColorInput = document.getElementById('text-color-input');
+const bgPaletteEl = document.getElementById('bg-palette');
+const textPaletteEl = document.getElementById('text-palette');
 
 let selectedId = null;
 const pan = { x: 0, y: 0 };
@@ -69,7 +72,10 @@ function renderAll() {
     },
   });
   const selectedNode = store.findNode(selectedId);
-  if (selectedNode) colorInput.value = selectedNode.color;
+  if (selectedNode) {
+    bgColorInput.value = selectedNode.color;
+    textColorInput.value = selectedNode.textColor;
+  }
 }
 
 function selectNode(nodeId) {
@@ -238,9 +244,29 @@ addChildBtn.addEventListener('click', () => handleAddChild());
 editBtn.addEventListener('click', () => startEditingNode(selectedId));
 deleteBtn.addEventListener('click', () => handleDelete());
 
-colorInput.addEventListener('change', () => {
-  store.setColor(selectedId, colorInput.value);
+bgColorInput.addEventListener('change', () => {
+  store.setColor(selectedId, bgColorInput.value);
 });
+
+textColorInput.addEventListener('change', () => {
+  store.setTextColor(selectedId, textColorInput.value);
+});
+
+function buildPalette(container, onPick) {
+  for (const color of BASIC_COLORS) {
+    const swatch = document.createElement('button');
+    swatch.type = 'button';
+    swatch.title = color;
+    swatch.style.backgroundColor = color;
+    swatch.className =
+      'w-5 h-5 rounded-full border border-slate-300 shadow-sm hover:scale-110 transition-transform';
+    swatch.addEventListener('click', () => onPick(color));
+    container.appendChild(swatch);
+  }
+}
+
+buildPalette(bgPaletteEl, (color) => store.setColor(selectedId, color));
+buildPalette(textPaletteEl, (color) => store.setTextColor(selectedId, color));
 
 // --- キーボードショートカット ---
 

@@ -11,25 +11,44 @@
   <header class="flex flex-wrap items-center gap-2 px-4 py-2 bg-white border-b border-slate-200 shadow-sm z-10">
     <h1 class="text-base font-bold mr-4">マインドマップ</h1>
 
-    <button id="new-map-btn" class="toolbar-btn" title="新規作成">新規</button>
-    <button id="open-btn" class="toolbar-btn" title="ファイルを開く (yml)">開く</button>
-    <button id="save-btn" class="toolbar-btn" title="保存 (Ctrl+S)">保存</button>
-    <button id="save-as-btn" class="toolbar-btn" title="名前を付けて保存">名前を付けて保存</button>
+    <button id="new-map-btn" class="toolbar-icon-btn" title="新規作成" aria-label="新規作成">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="12" y1="10" x2="12" y2="16"/></svg>
+    </button>
+    <button id="open-btn" class="toolbar-icon-btn" title="ファイルを開く (yml)" aria-label="ファイルを開く">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>
+    </button>
+    <button id="save-btn" class="toolbar-icon-btn" title="保存 (Ctrl+S)" aria-label="保存">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M7 21v-6h10v6"/></svg>
+    </button>
+    <button id="save-as-btn" class="toolbar-icon-btn" title="名前を付けて保存" aria-label="名前を付けて保存">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="12" height="14" rx="1"/><path d="M8 7V4a1 1 0 0 1 1-1h8l3 3v11a1 1 0 0 1-1 1h-3"/></svg>
+    </button>
 
     <span class="w-px h-6 bg-slate-200 mx-1"></span>
 
-    <button id="undo-btn" class="toolbar-btn" title="元に戻す (Ctrl+Z)">元に戻す</button>
-    <button id="redo-btn" class="toolbar-btn" title="やり直し (Ctrl+Shift+Z)">やり直し</button>
+    <button id="undo-btn" class="toolbar-icon-btn" title="元に戻す (Ctrl+Z)" aria-label="元に戻す">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7 4 12l5 5"/><path d="M4 12h10a5 5 0 0 1 0 10h-1"/></svg>
+    </button>
+    <button id="redo-btn" class="toolbar-icon-btn" title="やり直し (Ctrl+Shift+Z)" aria-label="やり直し">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7l5 5-5 5"/><path d="M20 12H10a5 5 0 0 0 0 10h1"/></svg>
+    </button>
 
     <span class="w-px h-6 bg-slate-200 mx-1"></span>
 
     <button id="add-child-btn" class="toolbar-btn" title="子ノードを追加 (Enter)">ノード追加</button>
     <button id="edit-btn" class="toolbar-btn" title="選択中ノードを編集">編集</button>
     <button id="delete-btn" class="toolbar-btn toolbar-btn-danger" title="ノードを削除 (Delete)">削除</button>
-    <label class="toolbar-btn flex items-center gap-2 cursor-pointer" title="選択中ノードの色を変更">
-      色
-      <input id="color-input" type="color" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" />
-    </label>
+
+    <div class="toolbar-btn flex items-center gap-2" title="選択中ノードの背景色">
+      <span class="text-xs text-slate-500">背景色</span>
+      <input id="bg-color-input" type="color" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" />
+      <div id="bg-palette" class="flex items-center gap-1"></div>
+    </div>
+    <div class="toolbar-btn flex items-center gap-2" title="選択中ノードの文字色">
+      <span class="text-xs text-slate-500">文字色</span>
+      <input id="text-color-input" type="color" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" />
+      <div id="text-palette" class="flex items-center gap-1"></div>
+    </div>
 
     <span id="status" class="ml-auto text-sm text-slate-500"></span>
   </header>
@@ -55,6 +74,23 @@
     .toolbar-btn-danger:hover {
       background-color: #fecaca;
       color: #991b1b;
+    }
+    .toolbar-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background-color: #f1f5f9;
+      color: #334155;
+    }
+    .toolbar-icon-btn:hover {
+      background-color: #e2e8f0;
+    }
+    .toolbar-icon-btn svg {
+      width: 1.25rem;
+      height: 1.25rem;
     }
   </style>
 

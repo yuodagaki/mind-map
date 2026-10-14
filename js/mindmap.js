@@ -11,6 +11,25 @@ const PALETTE = [
   '#fbcfe8', // pink-200
 ];
 
+const DEFAULT_TEXT_COLOR = '#1e293b'; // slate-800
+
+// カラーピッカーに添える基本色パレット(背景色・文字色の両方で共用)
+export const BASIC_COLORS = [
+  '#000000',
+  '#ffffff',
+  '#64748b', // slate
+  '#ef4444', // red
+  '#f97316', // orange
+  '#f59e0b', // amber
+  '#eab308', // yellow
+  '#22c55e', // green
+  '#14b8a6', // teal
+  '#3b82f6', // blue
+  '#6366f1', // indigo
+  '#a855f7', // purple
+  '#ec4899', // pink
+];
+
 let idCounter = 0;
 
 export function generateId() {
@@ -24,6 +43,7 @@ export function createDefaultState() {
       id: generateId(),
       text: '中心テーマ',
       color: PALETTE[0],
+      textColor: DEFAULT_TEXT_COLOR,
       position: { x: 0, y: 0 },
       children: [],
     },
@@ -45,6 +65,7 @@ function normalizeNode(raw) {
     id: typeof raw.id === 'string' && raw.id ? raw.id : generateId(),
     text: raw.text != null ? String(raw.text) : '',
     color: typeof raw.color === 'string' && raw.color ? raw.color : PALETTE[0],
+    textColor: typeof raw.textColor === 'string' && raw.textColor ? raw.textColor : DEFAULT_TEXT_COLOR,
     position: {
       x: Number(raw.position && raw.position.x) || 0,
       y: Number(raw.position && raw.position.y) || 0,
@@ -130,6 +151,7 @@ export class MindMapStore {
       id: generateId(),
       text,
       color: PALETTE[idCounter % PALETTE.length],
+      textColor: DEFAULT_TEXT_COLOR,
       position: {
         x: parent.position.x + 220,
         y: parent.position.y + index * 90 - ((parent.children.length) * 45),
@@ -154,6 +176,14 @@ export class MindMapStore {
     if (!node) return;
     this._pushUndo();
     node.color = color;
+    this._commit();
+  }
+
+  setTextColor(id, color) {
+    const node = this.findNode(id);
+    if (!node) return;
+    this._pushUndo();
+    node.textColor = color;
     this._commit();
   }
 
