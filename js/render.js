@@ -137,7 +137,7 @@ export function render(state, { selectedId, nodesLayer, svg, handlers, highlight
   for (const { node } of pairs) {
     const el = document.createElement('div');
     el.className =
-      'group absolute flex items-center px-4 py-2 rounded-xl shadow-md cursor-grab select-none border-2 active:cursor-grabbing';
+      'group absolute flex items-center px-4 py-2 rounded-xl shadow-md cursor-grab select-none border-2 active:cursor-grabbing touch-none';
     el.style.left = `${node.position.x}px`;
     el.style.top = `${node.position.y}px`;
     el.style.transform = 'translate(-50%, -50%)';
@@ -168,7 +168,7 @@ export function render(state, { selectedId, nodesLayer, svg, handlers, highlight
       toggleBtn.textContent = node.collapsed ? '▸' : '▾';
       toggleBtn.className =
         'absolute -left-3 -bottom-3 w-6 h-6 rounded-full bg-slate-400 hover:bg-slate-500 text-white text-xs leading-none shadow flex items-center justify-center';
-      toggleBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+      toggleBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
       toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         handlers.onToggleCollapse(node.id);
@@ -181,8 +181,8 @@ export function render(state, { selectedId, nodesLayer, svg, handlers, highlight
     editBtn.title = 'ノードを編集';
     editBtn.textContent = '✎';
     editBtn.className =
-      'absolute -right-3 -bottom-3 w-6 h-6 rounded-full bg-slate-600 text-white text-xs leading-none opacity-0 group-hover:opacity-100 transition-opacity shadow flex items-center justify-center';
-    editBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+      'absolute -right-3 -bottom-3 w-6 h-6 rounded-full bg-slate-600 text-white text-xs leading-none opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity shadow flex items-center justify-center';
+    editBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
     editBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       triggerEdit();
@@ -194,8 +194,8 @@ export function render(state, { selectedId, nodesLayer, svg, handlers, highlight
     addBtn.title = '子ノードを追加 (Enter)';
     addBtn.textContent = '+';
     addBtn.className =
-      'absolute -right-3 -top-3 w-6 h-6 rounded-full bg-blue-600 text-white text-xs leading-none opacity-0 group-hover:opacity-100 transition-opacity shadow flex items-center justify-center';
-    addBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+      'absolute -right-3 -top-3 w-6 h-6 rounded-full bg-blue-600 text-white text-xs leading-none opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity shadow flex items-center justify-center';
+    addBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
     addBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       handlers.onAddChild(node.id);
@@ -208,8 +208,8 @@ export function render(state, { selectedId, nodesLayer, svg, handlers, highlight
       delBtn.title = 'ノードを削除 (Delete)';
       delBtn.textContent = '×';
       delBtn.className =
-        'absolute -left-3 -top-3 w-6 h-6 rounded-full bg-red-500 text-white text-xs leading-none opacity-0 group-hover:opacity-100 transition-opacity shadow flex items-center justify-center';
-      delBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+        'absolute -left-3 -top-3 w-6 h-6 rounded-full bg-red-500 text-white text-xs leading-none opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity shadow flex items-center justify-center';
+      delBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
       delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         handlers.onDeleteNode(node.id);
@@ -217,10 +217,10 @@ export function render(state, { selectedId, nodesLayer, svg, handlers, highlight
       el.appendChild(delBtn);
     }
 
-    el.addEventListener('mousedown', (e) => {
+    el.addEventListener('pointerdown', (e) => {
       if (e.target.isContentEditable) return;
       e.stopPropagation();
-      handlers.onNodeMouseDown(e, node.id);
+      handlers.onNodePointerDown(e, node.id);
     });
     el.addEventListener('click', (e) => e.stopPropagation());
 

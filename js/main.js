@@ -82,7 +82,7 @@ function renderAll() {
       onTextCommit: (nodeId, text) => store.updateText(nodeId, text),
       onAddChild: (parentId) => handleAddChild(parentId),
       onDeleteNode: (nodeId) => handleDelete(nodeId),
-      onNodeMouseDown: (e, nodeId) => startNodeDrag(e, nodeId),
+      onNodePointerDown: (e, nodeId) => startNodeDrag(e, nodeId),
       onToggleCollapse: (nodeId) => store.toggleCollapse(nodeId),
     },
   });
@@ -140,18 +140,20 @@ function startNodeDrag(e, nodeId) {
   const node = store.findNode(nodeId);
   if (!node) return;
   dragState = {
+    pointerId: e.pointerId,
     nodeId,
     startMouse: screenToCanvas(e.clientX, e.clientY),
     startPos: { ...node.position },
     moved: false,
     interactionStarted: false,
   };
-  window.addEventListener('mousemove', onNodeDragMove);
-  window.addEventListener('mouseup', onNodeDragEnd);
+  window.addEventListener('pointermove', onNodeDragMove);
+  window.addEventListener('pointerup', onNodeDragEnd);
+  window.addEventListener('pointercancel', onNodeDragEnd);
 }
 
 function onNodeDragMove(e) {
-  if (!dragState) return;
+  if (!dragState || e.pointerId !== dragState.pointerId) return;
   const cur = screenToCanvas(e.clientX, e.clientY);
   const dx = cur.x - dragState.startMouse.x;
   const dy = cur.y - dragState.startMouse.y;
@@ -168,9 +170,10 @@ function onNodeDragMove(e) {
 }
 
 function onNodeDragEnd(e) {
-  window.removeEventListener('mousemove', onNodeDragMove);
-  window.removeEventListener('mouseup', onNodeDragEnd);
-  if (!dragState) return;
+  if (!dragState || e.pointerId !== dragState.pointerId) return;
+  window.removeEventListener('pointermove', onNodeDragMove);
+  window.removeEventListener('pointerup', onNodeDragEnd);
+  window.removeEventListener('pointercancel', onNodeDragEnd);
   const { nodeId, moved } = dragState;
   dragState = null;
   if (!moved) return;
@@ -182,37 +185,95 @@ function onNodeDragEnd(e) {
   }
 }
 
-// --- キャンバスのパン・ズーム ---
+// --- キャンバスのパン・ズーム(マウス/タッチ/ペン共通) ---
 
-let panState = null;
-
-viewport.addEventListener('mousedown', (e) => {
-  if (e.target.closest('[data-node-id]')) return;
-  panState = { startX: e.clientX - pan.x, startY: e.clientY - pan.y };
-  window.addEventListener('mousemove', onPanMove);
-  window.addEventListener('mouseup', onPanEnd);
-});
-
-function onPanMove(e) {
-  if (!panState) return;
-  pan.x = e.clientX - panState.startX;
-  pan.y = e.clientY - panState.startY;
+function zoomAtClientPoint(clientX, clientY, newZoom) {
+  const canvasPoint = screenToCanvas(clientX, clientY);
+  zoom = Math.min(3, Math.max(0.2, newZoom));
+  const rect = viewport.getBoundingClientRect();
+  const center = getViewportCenter();
+  pan.x = clientX - rect.left - center.x - zoom * canvasPoint.x;
+  pan.y = clientY - rect.top - center.y - zoom * canvasPoint.y;
   applyTransform();
 }
 
-function onPanEnd() {
-  panState = null;
-  window.removeEventListener('mousemove', onPanMove);
-  window.removeEventListener('mouseup', onPanEnd);
+let panState = null;
+// 2本指ピンチズーム用に、キャンバス背景に触れている全ポインタの現在位置を保持する
+const activePointers = new Map();
+let pinchStartDistance = null;
+let pinchStartZoom = null;
+
+function distanceBetween(p1, p2) {
+  return Math.hypot(p2.x - p1.x, p2.y - p1.y);
 }
+
+function midpointBetween(p1, p2) {
+  return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+}
+
+function startPanFromPointer(pointerId) {
+  const p = activePointers.get(pointerId);
+  panState = { pointerId, startX: p.x - pan.x, startY: p.y - pan.y };
+}
+
+viewport.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('[data-node-id]')) return;
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (activePointers.size === 1) {
+    startPanFromPointer(e.pointerId);
+  } else if (activePointers.size === 2) {
+    panState = null;
+    const [p1, p2] = Array.from(activePointers.values());
+    pinchStartDistance = distanceBetween(p1, p2);
+    pinchStartZoom = zoom;
+  }
+});
+
+window.addEventListener('pointermove', (e) => {
+  if (!activePointers.has(e.pointerId)) return;
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (activePointers.size >= 2) {
+    const [p1, p2] = Array.from(activePointers.values());
+    const distance = distanceBetween(p1, p2);
+    if (pinchStartDistance) {
+      const mid = midpointBetween(p1, p2);
+      zoomAtClientPoint(mid.x, mid.y, pinchStartZoom * (distance / pinchStartDistance));
+    }
+    return;
+  }
+
+  if (panState && panState.pointerId === e.pointerId) {
+    pan.x = e.clientX - panState.startX;
+    pan.y = e.clientY - panState.startY;
+    applyTransform();
+  }
+});
+
+function endCanvasPointer(e) {
+  if (!activePointers.has(e.pointerId)) return;
+  activePointers.delete(e.pointerId);
+  if (panState && panState.pointerId === e.pointerId) panState = null;
+  if (activePointers.size < 2) {
+    pinchStartDistance = null;
+    pinchStartZoom = null;
+  }
+  if (activePointers.size === 1) {
+    // 2本指ピンチから1本指に戻ったら、その指でパンを続けられるようにする
+    const [remainingId] = activePointers.keys();
+    startPanFromPointer(remainingId);
+  }
+}
+
+window.addEventListener('pointerup', endCanvasPointer);
+window.addEventListener('pointercancel', endCanvasPointer);
 
 viewport.addEventListener(
   'wheel',
   (e) => {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
-    zoom = Math.min(3, Math.max(0.2, zoom * factor));
-    applyTransform();
+    zoomAtClientPoint(e.clientX, e.clientY, zoom * factor);
   },
   { passive: false }
 );
