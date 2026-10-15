@@ -172,13 +172,17 @@ export class MindMapStore {
     if (!parent) return null;
     this._pushUndo();
     const index = parent.children.length;
+    // 親が祖父母より左に配置されている(左方向へ伸びる枝の途中である)場合は、
+    // 子も同じ方向(左)へ伸ばして枝の向きを維持する
+    const grandparent = this.findParent(parentId);
+    const direction = grandparent && parent.position.x < grandparent.position.x ? -1 : 1;
     const newNode = {
       id: generateId(),
       text,
       color: PALETTE[idCounter % PALETTE.length],
       textColor: DEFAULT_TEXT_COLOR,
       position: {
-        x: parent.position.x + 220,
+        x: parent.position.x + direction * 220,
         y: parent.position.y + index * 90 - ((parent.children.length) * 45),
       },
       collapsed: false,
