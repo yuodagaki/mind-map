@@ -103,6 +103,7 @@ function handleAddChild(parentId = selectedId) {
   if (newNode) {
     selectedId = newNode.id;
     renderAll();
+    startEditingNode(newNode.id);
   }
 }
 
@@ -423,6 +424,9 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
     handleAddChild();
+  } else if (e.key === 'F2') {
+    e.preventDefault();
+    startEditingNode(selectedId);
   } else if (e.key === 'Delete') {
     e.preventDefault();
     handleDelete();

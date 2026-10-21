@@ -178,7 +178,7 @@ export function render(state, { selectedId, nodesLayer, svg, handlers, highlight
 
     const editBtn = document.createElement('button');
     editBtn.type = 'button';
-    editBtn.title = 'ノードを編集';
+    editBtn.title = 'ノードを編集 (F2)';
     editBtn.textContent = '✎';
     editBtn.className =
       'absolute -right-3 -bottom-3 w-6 h-6 rounded-full bg-slate-600 text-white text-xs leading-none opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity shadow flex items-center justify-center';
