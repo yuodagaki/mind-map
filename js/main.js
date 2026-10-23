@@ -24,6 +24,9 @@ const bgPaletteEl = document.getElementById('bg-palette');
 const textPaletteEl = document.getElementById('text-palette');
 const searchInput = document.getElementById('search-input');
 const searchCountEl = document.getElementById('search-count');
+const helpBtn = document.getElementById('help-btn');
+const helpModal = document.getElementById('help-modal');
+const helpCloseBtn = document.getElementById('help-close-btn');
 
 let selectedId = null;
 const pan = { x: 0, y: 0 };
@@ -405,9 +408,34 @@ searchInput.addEventListener('keydown', (e) => {
   }
 });
 
+// --- ヘルプモーダル ---
+
+function openHelp() {
+  helpModal.classList.remove('hidden');
+  helpModal.classList.add('flex');
+}
+
+function closeHelp() {
+  helpModal.classList.add('hidden');
+  helpModal.classList.remove('flex');
+}
+
+helpBtn.addEventListener('click', openHelp);
+helpCloseBtn.addEventListener('click', closeHelp);
+helpModal.addEventListener('click', (e) => {
+  if (e.target === helpModal) closeHelp();
+});
+
 // --- キーボードショートカット ---
 
 document.addEventListener('keydown', (e) => {
+  if (!helpModal.classList.contains('hidden')) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeHelp();
+    }
+    return;
+  }
   const active = document.activeElement;
   if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.isContentEditable) {
     // 検索ボックスやカラーピッカーにフォーカス中はノード操作のショートカットを発火させない
